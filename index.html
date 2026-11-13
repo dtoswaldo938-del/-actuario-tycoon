@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actuario Tycoon</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+  <!-- ====================== PANTALLA 1: INICIO ====================== -->
+  <section id="pantalla-inicio" class="pantalla">
+    <div class="inicio-caja">
+      <div class="logo">🛡️</div>
+      <h1>Actuario <span class="dorado">Tycoon</span></h1>
+      <p class="lema">Dirige una aseguradora de vida durante 20 años.<br>
+        Elige bien a tus asegurados... o prepárate para la quiebra.</p>
+
+      <div class="reglas">
+        <div class="regla"><span>👥</span><p>Cada año llegan <b>8 candidatos</b>. Asegura a los que quieras: de 0 a 8.</p></div>
+        <div class="regla"><span>🎲</span><p>Todo es aleatorio: muertes, cancelaciones, mentiras, rendimientos y una <b>ruleta</b> cada año con pandemias, multas, auditorías...</p></div>
+        <div class="regla"><span>🛟</span><p>Tienes <b>una sola carta de reaseguro</b> para usar en toda la partida.</p></div>
+        <div class="regla"><span>🏆</span><p>Termina con más capital del que empezaste para <b>ganar</b>, y con 1.75 veces o más para ser una aseguradora <b>Élite</b>.</p></div>
+      </div>
+
+      <div class="fila-botones">
+        <button id="btn-nueva" class="boton primario grande">▶ Nueva partida</button>
+        <button id="btn-montecarlo" class="boton secundario grande">📊 Simulación Monte Carlo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== PANTALLA 2: JUEGO ====================== -->
+  <section id="pantalla-juego" class="pantalla oculta">
+
+    <!-- Barra superior (HUD) -->
+    <header class="hud">
+      <div class="hud-item">
+        <span class="hud-etiqueta">Año</span>
+        <span class="hud-valor"><span id="hud-anio">1</span> / <span id="hud-total">20</span></span>
+        <div class="barra-progreso"><div id="hud-barra" class="relleno"></div></div>
+      </div>
+      <div class="hud-item hud-capital">
+        <span class="hud-etiqueta">Capital</span>
+        <span id="hud-capital" class="hud-valor grande">$2,000,000</span>
+        <span id="hud-delta" class="hud-delta"></span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-etiqueta">Pólizas activas</span>
+        <span id="hud-polizas" class="hud-valor">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-etiqueta">Reaseguro</span>
+        <span id="hud-reaseguro" class="hud-valor">🛟 Disponible</span>
+      </div>
+    </header>
+
+    <!-- Banner del evento aleatorio -->
+    <div id="banner-evento" class="banner-evento oculta"></div>
+
+    <main class="juego-layout">
+
+      <!-- Columna izquierda: candidatos -->
+      <section class="columna-candidatos">
+        <h2>Candidatos de este año</h2>
+        <p class="subtitulo">Haz clic en una tarjeta para asegurar (o quitar) a esa persona.</p>
+        <div id="lista-candidatos" class="candidatos-grid"></div>
+
+        <div class="barra-accion">
+          <div id="sel-resumen" class="sel-resumen">Sin seleccionar</div>
+          <div class="acciones">
+            <button id="btn-reaseguro" class="boton secundario">🛟 Usar reaseguro este año</button>
+            <button id="btn-jugar" class="boton primario">Confirmar y jugar el año ▶</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Columna derecha: gráfica y cartera -->
+      <aside class="columna-lateral">
+        <div class="panel">
+          <h3>Evolución del capital</h3>
+          <canvas id="grafica-capital" width="420" height="220"></canvas>
+        </div>
+        <div class="panel">
+          <h3>Tu cartera</h3>
+          <div id="lista-cartera" class="cartera"></div>
+        </div>
+      </aside>
+    </main>
+
+        <!-- Ventana de la ruleta -->
+    <div id="modal-ruleta" class="modal oculta">
+      <div class="modal-caja ruleta-caja">
+        <h2 id="ruleta-titulo">🎡 ¡Gira la ruleta del año!</h2>
+        <p class="subtitulo">Cada casilla tiene la misma probabilidad: 1 de 10.</p>
+        <canvas id="ruleta-canvas" width="360" height="360"></canvas>
+        <div id="ruleta-resultado" class="ruleta-resultado oculta"></div>
+        <div id="ruleta-leyenda" class="ruleta-leyenda"></div>
+        <button id="btn-ruleta-seguir" class="boton primario grande oculta">Ver los resultados del mes ▶</button>
+      </div>
+    </div>
+
+    <!-- Ventana con el resumen del mes -->
+    <div id="modal-mes" class="modal oculta">
+      <div class="modal-caja">
+        <div id="modal-contenido"></div>
+        <button id="btn-continuar" class="boton primario grande">Continuar ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== PANTALLA 3: FINAL ====================== -->
+  <section id="pantalla-final" class="pantalla oculta">
+    <div class="final-caja">
+      <div id="final-icono" class="final-icono">🏆</div>
+      <h1 id="final-titulo">Aseguradora Élite</h1>
+      <p id="final-subtitulo" class="lema"></p>
+
+      <div id="final-stats" class="stats-grid"></div>
+
+      <div class="panel">
+        <h3>Así evolucionó tu capital</h3>
+        <canvas id="grafica-final" width="760" height="260"></canvas>
+      </div>
+
+      <div class="panel">
+        <h3>Revisión de tus decisiones</h3>
+        <p class="subtitulo">Aquí se revelan las mentiras que no viste.</p>
+        <div id="final-revision" class="cartera"></div>
+      </div>
+
+      <div class="fila-botones">
+        <button id="btn-reiniciar" class="boton primario grande">↻ Jugar de nuevo</button>
+        <button id="btn-ir-mc" class="boton secundario grande">📊 Ver Monte Carlo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== PANTALLA 4: MONTE CARLO ====================== -->
+  <section id="pantalla-mc" class="pantalla oculta">
+    <div class="final-caja">
+      <h1>Simulación <span class="dorado">Monte Carlo</span></h1>
+      <p class="lema">Miles de partidas automáticas para medir el riesgo del modelo.</p>
+
+      <div class="panel mc-controles">
+        <label>Estrategia
+          <select id="mc-estrategia"></select>
+        </label>
+        <label>Número de partidas
+          <select id="mc-n">
+            <option value="500">500</option>
+            <option value="1000" selected>1,000</option>
+            <option value="3000">3,000</option>
+          </select>
+        </label>
+        <button id="btn-correr-mc" class="boton primario">▶ Simular</button>
+      </div>
+
+      <div id="mc-estado" class="subtitulo"></div>
+      <div id="mc-resultados" class="stats-grid"></div>
+
+      <div class="mc-graficas">
+        <div class="panel">
+          <h3>Distribución del capital final</h3>
+          <canvas id="grafica-histograma" width="520" height="260"></canvas>
+        </div>
+        <div class="panel">
+          <h3>Capital medio año a año</h3>
+          <canvas id="grafica-trayectoria" width="520" height="260"></canvas>
+        </div>
+      </div>
+
+      <div class="fila-botones">
+        <button id="btn-volver-inicio" class="boton secundario grande">← Volver al inicio</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- El orden importa: tabla, modelo y por último el juego -->
+  <script src="tabla.js"></script>
+  <script src="modelo.js"></script>
+  <script src="juego.js"></script>
+</body>
+</html>
